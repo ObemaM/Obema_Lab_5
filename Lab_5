@@ -1,0 +1,137 @@
+using System;
+
+namespace Obema_Lab_1_T2
+{
+    class Program_2
+    {
+        static int CheckInt (string message, int l, int r)
+        {
+            int number;
+            bool IsNumber;
+            do
+            {
+                Console.Write(message);
+                IsNumber = int.TryParse(Console.ReadLine(), out number);
+                if (!IsNumber || Math.Abs(number) > r)
+                {
+                    IsNumber = false;
+                    Console.WriteLine($"Некорректный ввод целого числа. Число должно быть от {l} до {r}");
+                }
+            } while (!IsNumber);
+            return number;
+        }
+
+        static double CheckDouble(string message)
+        {
+            double number;
+            bool IsNumber;
+            do
+            {
+                Console.Write(message);
+                IsNumber = double.TryParse(Console.ReadLine(), out number);
+                if (!IsNumber || Math.Abs(number) > 10000)
+                {
+                    IsNumber = false;
+                    Console.WriteLine($"Некорректный ввод целого числа. Число должно быть от -10000 до 10000");
+                }
+            } while (!IsNumber);
+            return number;
+        }
+
+        static double [,] CreateMatrix(int lines, int columns)
+        {
+            double[,] doubleMatrix = new double[lines, columns];
+            for (int i = 0; i < lines; i++)
+            {
+                for (int j = 0; j < columns; j++)
+                {
+                    doubleMatrix[i, j] = CheckDouble($"Строка {i + 1}, элемент {j + 1}: ");
+                }
+            }
+            return doubleMatrix;
+        }
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Выберите действие:");
+            Console.WriteLine("1. Создать двумерный массив (матрицу)");
+            Console.WriteLine("2. Создать рваный массив");
+            Console.WriteLine("3. Ввести строку символов");
+            Console.WriteLine("4. Выйти из программы");
+
+            int choice = CheckInt("Ваш выбор (от 1 до 4): ", 1, 4);
+            switch (choice)
+            {
+                case 1:
+                    int countLine = CheckInt("Задайте количество строк у матрицы: ", 1, 20);
+                    int countColumn = CheckInt("Задайте количество столбцов у матрицы: ", 1, 20);
+
+                    Console.WriteLine("\nВыберите метод заполнения матрицы:");
+                    Console.WriteLine("1. Случайные числа");
+                    Console.WriteLine("2. Ввод с клавиатуры");
+
+                    choice = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
+                    switch (choice)
+                    {
+
+                        case 1: 
+                            break;
+                        case 2:
+                        {
+                            Console.WriteLine("\nВведите элементы для заполнения матрицы: ");
+                            double[,]  MatrixArr = CreateMatrix(countLine, countColumn);
+                            Console.WriteLine("Матрица: ");
+                            for (int i = 0; i < countLine; i++)
+                            {
+                                    for (int j = 0; j < countColumn; j++)
+                                    {
+                                        Console.Write(MatrixArr[i, j] + " ");
+                                    }
+                                    Console.WriteLine();
+                            }
+                        }
+                        break;
+                    }
+
+                    Console.WriteLine("Выберите действие:");
+                    Console.WriteLine("1. Напечатать текущий массив");
+                    Console.WriteLine("2. Создать рваный массив");
+                    Console.WriteLine("3. Ввести строку символов");
+                    Console.WriteLine("4. Выйти из программы");
+
+                    choice = CheckInt("Ваш выбор (от 1 до 4): ", 1, 4);
+                    switch (choice)
+                    {
+
+                        case 1:
+                            break;
+                        case 2:
+                            break;
+                    }
+                    break;
+                case 2:
+                    Console.WriteLine("\nВыберите метод заполнения массива:");
+                    Console.WriteLine("1. Случайные числа");
+                    Console.WriteLine("2. Ввод с клавиатуры");
+
+                    int CreateNew = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
+                    switch (CreateNew)
+                    {
+                        case 1:
+                            break;
+                        case 2:
+                            int CountLine = CheckInt("Выберите количество строк у массива: ", 1, 20);
+                            break;
+
+
+                    }
+                    break;
+                case 3:
+                    break;
+                case 4:
+                    break;
+            }
+            Console.ReadLine();
+        }
+    }
+}
