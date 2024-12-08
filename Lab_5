@@ -1,10 +1,13 @@
 using System;
+using System.Text;
+using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Obema_Lab_1_T2
 {
     class Program_2
     {
-        static int CheckInt (string message, int l, int r)
+        static int CheckInt(string message, int min, int max)
         {
             int number;
             bool IsNumber;
@@ -12,12 +15,13 @@ namespace Obema_Lab_1_T2
             {
                 Console.Write(message);
                 IsNumber = int.TryParse(Console.ReadLine(), out number);
-                if (!IsNumber || Math.Abs(number) > r)
+                if (!IsNumber || number > max || number < min)
                 {
                     IsNumber = false;
-                    Console.WriteLine($"Некорректный ввод целого числа. Число должно быть от {l} до {r}");
+                    Console.WriteLine($"Некорректный ввод целого числа. Число должно быть от {min} до {max}");
                 }
             } while (!IsNumber);
+
             return number;
         }
 
@@ -35,6 +39,7 @@ namespace Obema_Lab_1_T2
                     Console.WriteLine($"Некорректный ввод целого числа. Число должно быть от -10000 до 10000");
                 }
             } while (!IsNumber);
+
             return number;
         }
 
@@ -44,94 +49,455 @@ namespace Obema_Lab_1_T2
             for (int i = 0; i < lines; i++)
             {
                 for (int j = 0; j < columns; j++)
+                    doubleMatrix[i, j] = CheckDouble($"Строка {i + 1}, столбец {j + 1}: ");
+            }
+
+            return doubleMatrix;
+        }
+
+        static double[,] RandomMatrix(int lines, int columns, int q)
+        {
+            double[,] doubleMatrix = new double[lines, columns];
+            for (int i = 0; i < lines; i++)
+            {
+                for (int j = 0; j < columns; j++)
                 {
-                    doubleMatrix[i, j] = CheckDouble($"Строка {i + 1}, элемент {j + 1}: ");
+                    Random random = new Random();
+                    doubleMatrix[i, j] = Math.Round(-10000 + random.NextDouble() * 20000, q);
+                    if (doubleMatrix[i, j] == -0)
+                        doubleMatrix[i, j] = 0;
                 }
             }
+
             return doubleMatrix;
+        }
+
+        static void PrintMatrix(double[,] matrix, int lines, int columns)
+        {
+            Console.WriteLine("\nМатрица: ");
+            for (int i = 0; i < lines; i++)
+            {
+                Console.WriteLine();
+                for (int j = 0; j < columns; j++)
+                    Console.Write(matrix[i, j] + "     ");
+                Console.WriteLine();
+            }
+        }
+
+        static double[,] AddColumns(double[,] BuildMatrix, int lines, int columns, int extraColumns)
+        {
+            double[,] newMatrix = new double[lines, columns + extraColumns];
+
+            Console.WriteLine("\nВыберите метод заполнения матрицы:");
+            Console.WriteLine("1. Случайные числа");
+            Console.WriteLine("2. Ввод с клавиатуры");
+
+            int choice = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
+            switch (choice)
+            {
+
+                case 1:
+                    {
+                        Console.WriteLine("\nВыберите до какого числа после запятой округлять числа: ");
+                        int q = CheckInt("Выберите число от 0 до 8: ", 0, 8);
+
+                        for (int i = 0; i < lines; i++)
+                        {
+                            for (int j = 0; j < columns; j++)
+                                newMatrix[i, j] = BuildMatrix[i, j];
+                        }
+
+                        for (int i = 0; i < lines; i++)
+                        {
+                            for (int j = columns; j < columns + extraColumns; j++)
+                            {
+                                Random random = new Random();
+                                newMatrix[i, j] = Math.Round(-10000 + random.NextDouble() * 20000, q);
+                            }
+                        }
+                    }
+                    break;
+                case 2:
+                    {
+                        for (int i = 0; i < lines; i++)
+                        {
+                            for (int j = 0; j < columns; j++)
+                                newMatrix[i, j] = BuildMatrix[i, j];
+                        }
+
+                        for (int i = 0; i < lines; i++)
+                        {
+                            for (int j = columns; j < columns + extraColumns; j++)
+                                newMatrix[i, j] = CheckDouble($"Строка {i + 1}, столбец {j + 1}: ");
+                        }
+                    }
+                    break;
+            }
+
+            return newMatrix;
+        }
+
+        static double[][] CreateArray(int lines)
+        {
+            double[][] doubleArray = new double[lines][];
+            for (int i = 0; i < lines; i++)
+            {
+                int columns = CheckInt($"Введите количество элементов в строке No{i + 1}: ", 1, 10);
+                doubleArray[i] = new double[columns];
+                for (int j = 0; j < columns; j++)
+                    doubleArray[i][j] = CheckDouble($"Строка {i + 1}, элемент {j + 1}: ");
+            }
+
+            return doubleArray;
+        }
+
+        static double[][] RandomArray(int lines, int q)
+        {
+            double[][] doubleArray = new double[lines][];
+            for (int i = 0; i < lines; i++)
+            {
+                int columns = CheckInt($"Введите количество элементов в строке No{i + 1}: ", 1, 10);
+                doubleArray[i] = new double[columns];
+                for (int j = 0; j < columns; j++)
+                {
+                    Random random = new Random();
+                    doubleArray[i][j] = Math.Round(-10000 + random.NextDouble() * 20000, q);
+                }
+            }
+
+            return doubleArray;
+        }
+
+        static void PrintArray(double[][] array, int lines)
+        {
+            Console.WriteLine("\nРваный массив: ");
+            for (int i = 0; i < lines; i++)
+            {
+                Console.WriteLine();
+                for (int j = 0; j < array[i].Length; j++)
+                    Console.Write(array[i][j] + "     ");
+                Console.WriteLine();
+            }
+        }
+
+        static double[][] RemoveFirstLine(double[][] array, double K)
+        {
+            int lineToRemove = -1;
+
+            for (int i = 0; i < array.Length; i++)
+            {
+                bool foundK = false;
+                foreach (double num in array[i])
+                {
+                    if (num == K)
+                    {
+                        foundK = true;
+                        break;
+                    }
+                }
+                if (foundK)
+                {
+                    lineToRemove = i;
+                    break;
+                }
+            }
+
+            if (lineToRemove == -1)
+                return array;
+
+            double[][] newArray = new double[array.Length - 1][];
+            int newArrayIndex = 0;
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (i != lineToRemove)
+                    newArray[newArrayIndex++] = array[i];
+            }
+
+            return newArray;
+        }
+
+        static string ProcessString(string input)
+        {
+            // Убираем лишние пробелы
+            string trimmedInput = string.Join(" ", input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+
+            // Проверяем и добавляем пробелы после :, ;,
+            trimmedInput = trimmedInput.Replace(": ", ":");
+            trimmedInput = trimmedInput.Replace(", ", ",");
+            trimmedInput = trimmedInput.Replace("; ", ";");
+            trimmedInput = trimmedInput.Replace(":", ": ");
+            trimmedInput = trimmedInput.Replace(",", ", ");
+            trimmedInput = trimmedInput.Replace(";", "; ");
+
+            // Разделяем текст на предложения по . ! ?
+            string[] sentences = trimmedInput.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
+            StringBuilder result = new StringBuilder();
+
+            foreach (string sentence in sentences)
+            {
+                // Убираем лишние пробелы в предложении
+                string trimmedSentence = sentence.Trim();
+
+                // Сохраняем корректное предложение
+                result.Append(trimmedSentence);
+
+                // Добавляем символ конца предложения
+                if (input.Contains(trimmedSentence + '.')) result.Append(". ");
+                else if (input.Contains(trimmedSentence + '!')) result.Append("! ");
+                else if (input.Contains(trimmedSentence + '?')) result.Append("? ");
+            }
+
+            // Возвращаем результат с удалением лишнего пробела в конце
+            return result.ToString().Trim();
         }
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Выберите действие:");
-            Console.WriteLine("1. Создать двумерный массив (матрицу)");
-            Console.WriteLine("2. Создать рваный массив");
-            Console.WriteLine("3. Ввести строку символов");
-            Console.WriteLine("4. Выйти из программы");
-
-            int choice = CheckInt("Ваш выбор (от 1 до 4): ", 1, 4);
-            switch (choice)
+            int choice;
+            do
             {
-                case 1:
-                    int countLine = CheckInt("Задайте количество строк у матрицы: ", 1, 20);
-                    int countColumn = CheckInt("Задайте количество столбцов у матрицы: ", 1, 20);
+                Console.WriteLine("Выберите действие:");
+                Console.WriteLine("1. Создать матрицу");
+                Console.WriteLine("2. Создать рваный массив");
+                Console.WriteLine("3. Ввести строку символов");
+                Console.WriteLine("4. Выйти из программы");
 
-                    Console.WriteLine("\nВыберите метод заполнения матрицы:");
-                    Console.WriteLine("1. Случайные числа");
-                    Console.WriteLine("2. Ввод с клавиатуры");
+                choice = CheckInt("Ваш выбор (от 1 до 4): ", 1, 4);
+                switch (choice)
+                {
+                    case 1:
+                        int lines = CheckInt("\nЗадайте количество строк у матрицы: ", 1, 10);
+                        int columns = CheckInt("Задайте количество столбцов у матрицы: ", 1, 10);
 
-                    choice = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
-                    switch (choice)
-                    {
+                        Console.WriteLine("\nВыберите метод заполнения матрицы:");
+                        Console.WriteLine("1. Случайные числа");
+                        Console.WriteLine("2. Ввод с клавиатуры");
 
-                        case 1: 
-                            break;
-                        case 2:
+                        double[,] BuildMatrix = null;
+                        choice = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
+                        switch (choice)
                         {
-                            Console.WriteLine("\nВведите элементы для заполнения матрицы: ");
-                            double[,]  MatrixArr = CreateMatrix(countLine, countColumn);
-                            Console.WriteLine("Матрица: ");
-                            for (int i = 0; i < countLine; i++)
+
+                            case 1:
+                                {
+                                    Console.WriteLine("\nВыберите до какого числа после запятой округлять числа: ");
+                                    int q = CheckInt("Выберите число от 0 до 8: ", 0, 8);
+                                    BuildMatrix = RandomMatrix(lines, columns, q);
+                                    Console.WriteLine("\nМатрица создана");
+                                }
+                                break;
+                            case 2:
+                                {
+                                    Console.WriteLine("\nВведите элементы для заполнения матрицы: ");
+                                    BuildMatrix = CreateMatrix(lines, columns);
+                                    Console.WriteLine("\nМатрица создана");
+                                }
+                                break;
+                        }
+
+                        do
+                        {
+                            if (BuildMatrix == null)
+                                Console.WriteLine("\nМатрица пуста");
+                            else
                             {
-                                    for (int j = 0; j < countColumn; j++)
-                                    {
-                                        Console.Write(MatrixArr[i, j] + " ");
-                                    }
-                                    Console.WriteLine();
+                                Console.WriteLine("\nВыберите действие: ");
+                                Console.WriteLine("1. Напечатать текущую матрицу");
+                                Console.WriteLine("2. Добавить столбцы");
+                                Console.WriteLine("3. Назад");
+                                Console.WriteLine("4. Выйти из программы");
+
+                                choice = CheckInt("Ваш выбор (от 1 до 4): ", 1, 4);
+                                switch (choice)
+                                {
+                                    case 1:
+                                        PrintMatrix(BuildMatrix, lines, columns);
+                                        break;
+                                    case 2:
+                                        if (columns == 10)
+                                            Console.WriteLine("\nПревышено максимально допустимое количество столбцов (10)");
+                                        else
+                                        {
+                                            int extraColumns = CheckInt("\nЗадайте количество столбцов, которые вы хотите добавить к матрице: ", 1, 10 - columns);
+                                            int oldColumns = columns;
+                                            columns = extraColumns + columns;
+                                            BuildMatrix = AddColumns(BuildMatrix, lines, oldColumns, extraColumns);
+                                            Console.WriteLine("\nМатрица изменена");
+                                        }
+                                        break;
+                                    case 3:
+                                        Console.WriteLine();
+                                        break;
+                                    case 4:
+                                        Console.WriteLine("\nВыход из программы...");
+                                        break;
+                                }
                             }
+                        } while (choice != 3 && choice != 4);
+                        break;
+                    case 2:
+                        Console.WriteLine("\nВыберите метод заполнения массива: ");
+                        Console.WriteLine("1. Случайные числа");
+                        Console.WriteLine("2. Ввод с клавиатуры");
+
+                        double[][] BuildArray = null;
+                        choice = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
+                        lines = CheckInt("\nВыберите количество строк у массива: ", 1, 10);
+                        switch (choice)
+                        {
+                            case 1:
+                                Console.WriteLine("\nВыберите до какого числа после запятой округлять числа: ");
+                                int q = CheckInt("\nВыберите число от 0 до 8: ", 0, 8);
+                                BuildArray = RandomArray(lines, q);
+                                break;
+                            case 2:
+                                BuildArray = CreateArray(lines);
+                                break;
+                        }
+
+                        do
+                        {
+                            if (BuildArray == null)
+                                Console.WriteLine("\nМассив пуст");
+                            else
+                            {
+                                Console.WriteLine("\nВыберите действие: ");
+                                Console.WriteLine("1. Напечатать текущий массив");
+                                Console.WriteLine("2. Удалить первую строку, в которой встречается заданное число K");
+                                Console.WriteLine("3. Назад");
+                                Console.WriteLine("4. Выйти из программы");
+
+                                choice = CheckInt("Ваш выбор (от 1 до 4): ", 1, 4);
+                                switch (choice)
+                                {
+                                    case 1:
+                                        PrintArray(BuildArray, lines);
+                                        break;
+                                    case 2:
+                                        double K = CheckDouble("\nВведите число для поиска в массиве: ");
+                                        BuildArray = RemoveFirstLine(BuildArray, K);
+                                        lines = BuildArray.Length;
+                                        break;
+                                    case 3:
+                                        Console.WriteLine();
+                                        break;
+                                    case 4:
+                                        Console.WriteLine("\nВыход из программы...");
+                                        break;
+                                }
+                            }
+                        } while (choice != 3 && choice != 4);
+                        break;
+                    case 3:
+                        {
+                            Console.WriteLine("\nВыберите метод заполнения строки: ");
+                            Console.WriteLine("1. Тестовый вариант");
+                            Console.WriteLine("2. Ввод с клавиатуры");
+
+                            choice = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
+                            string input = " ";
+                            switch (choice)
+                            {
+
+                                case 1:
+                                    input = "В лесу родилась елочка! В лесу она росла. Зимой и летом стройная, зеленая была!";
+                                    break;
+                                case 2:
+                                    {
+                                        bool NotEmpty = false;
+
+                                        do
+                                        {
+                                            Console.WriteLine("\nВведите строку символов:");
+                                            input = Console.ReadLine();
+
+                                            // Проверяем, является ли строка пустой или состоит только из пробелов
+                                            if (string.IsNullOrWhiteSpace(input))
+                                            {
+                                                Console.WriteLine("Строка не должна быть пустой или состоять только из пробелов. Попробуйте снова");
+                                                NotEmpty = false;
+                                            }
+                                            else
+                                            {
+                                                NotEmpty = true;
+                                            }
+
+                                        } while (!NotEmpty);
+                                    }
+                                    break;
+                            }
+                            string trimmedInput = string.Join(" ", input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)); // Удаление лишних пробелов
+
+                            string processedString = ProcessString(trimmedInput); // Удаление знаков препинания, кроме . ! ? в конце предложений
+                            do
+                            {
+                                Console.WriteLine("\nВыберите действие: ");
+                                Console.WriteLine("1. Вывести текущую строку");
+                                Console.WriteLine("2. Перевернуть предложения с !");
+                                Console.WriteLine("3. Выйти в основное меню");
+
+                                choice = CheckInt("Ваш выбор (от 1 до 3): ", 1, 3);
+                                switch (choice)
+                                {
+
+                                    case 1:
+                                        {
+                                            Console.WriteLine("\nТекущая строка:");
+                                            Console.WriteLine(processedString);
+                                        }
+                                        break;
+                                    case 2:
+                                        {
+                                            string[] sentences = Regex.Split(processedString, @"(?<=[.!?])\s*"); //ахахах :(
+
+                                            for (int i = 0; i < sentences.Length; i++)
+                                            {
+                                                string sentence = sentences[i]; // Получаем текущее предложение
+                                                if (sentence.Length > 0 && sentence[sentence.Length - 1] == '!')
+                                                {
+                                                    sentence = sentence.Substring(0, sentence.Length - 1); // Удаляем последний символ
+                                                    string[] words = sentence.Split(' ');
+
+                                                    Array.Reverse(words); // Переворачиваем порядок слов
+                                                    string reversedSentence = string.Join(" ", words); // Объединяем слова обратно в строку
+
+                                                    reversedSentence = char.ToUpper(reversedSentence[0]) + reversedSentence.Substring(1); // Первое слово с большой буквы
+
+                                                    if (reversedSentence.Length > 0) // Меняем первую букву последнего слова на строчную
+                                                    {
+                                                        int lastSpaceIndex = reversedSentence.LastIndexOf(' ');
+                                                        if (lastSpaceIndex != -1 && lastSpaceIndex < reversedSentence.Length - 1)
+                                                        {
+                                                            string lastWord = reversedSentence.Substring(lastSpaceIndex + 1);
+                                                            string modifiedLastWord = char.ToLower(lastWord[0]) + lastWord.Substring(1);
+                                                            reversedSentence = reversedSentence.Substring(0, lastSpaceIndex + 1) + modifiedLastWord;
+                                                        }
+                                                    }
+
+                                                    sentences[i] = reversedSentence + "!"; // Записываем измененное предложение обратно в массив
+                                                }
+                                            }
+
+                                            processedString = string.Join(" ", sentences).Trim(); // Собираем предложения в строку
+                                            Console.WriteLine("\nСтрока изменена");
+                                        }
+                                        break;
+
+                                    case 3:
+                                        Console.WriteLine();
+                                        break;
+                                }
+                            } while (choice != 3);
                         }
                         break;
-                    }
-
-                    Console.WriteLine("Выберите действие:");
-                    Console.WriteLine("1. Напечатать текущий массив");
-                    Console.WriteLine("2. Создать рваный массив");
-                    Console.WriteLine("3. Ввести строку символов");
-                    Console.WriteLine("4. Выйти из программы");
-
-                    choice = CheckInt("Ваш выбор (от 1 до 4): ", 1, 4);
-                    switch (choice)
-                    {
-
-                        case 1:
-                            break;
-                        case 2:
-                            break;
-                    }
-                    break;
-                case 2:
-                    Console.WriteLine("\nВыберите метод заполнения массива:");
-                    Console.WriteLine("1. Случайные числа");
-                    Console.WriteLine("2. Ввод с клавиатуры");
-
-                    int CreateNew = CheckInt("Ваш выбор (от 1 до 2): ", 1, 2);
-                    switch (CreateNew)
-                    {
-                        case 1:
-                            break;
-                        case 2:
-                            int CountLine = CheckInt("Выберите количество строк у массива: ", 1, 20);
-                            break;
-
-
-                    }
-                    break;
-                case 3:
-                    break;
-                case 4:
-                    break;
-            }
-            Console.ReadLine();
+                    case 4:
+                        Console.WriteLine("\nВыход из программы...");
+                        break;
+                }
+            } while (choice != 4);
         }
     }
 }
+
+
+
