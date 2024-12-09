@@ -405,22 +405,18 @@ namespace Obema_Lab_1_T2
                                 case 2:
                                     {
                                         bool NotEmpty = false;
-
                                         do
                                         {
                                             Console.WriteLine("\nВведите строку символов:");
                                             input = Console.ReadLine();
 
-                                            // Проверяем, является ли строка пустой или состоит только из пробелов
                                             if (string.IsNullOrWhiteSpace(input))
                                             {
                                                 Console.WriteLine("Строка не должна быть пустой или состоять только из пробелов. Попробуйте снова");
                                                 NotEmpty = false;
                                             }
                                             else
-                                            {
                                                 NotEmpty = true;
-                                            }
 
                                         } while (!NotEmpty);
                                     }
@@ -448,41 +444,36 @@ namespace Obema_Lab_1_T2
                                         break;
                                     case 2:
                                         {
-                                            string[] sentences = Regex.Split(processedString, @"(?<=[.!?])\s*"); //ахахах :(
+                                            string[] sentences = Regex.Split(processedString, @"(?<=[.!?])\s*");
 
                                             for (int i = 0; i < sentences.Length; i++)
                                             {
-                                                string sentence = sentences[i]; // Получаем текущее предложение
-                                                if (sentence.Length > 0 && sentence[sentence.Length - 1] == '!')
+                                                string sentence = sentences[i];
+                                                if (sentence.EndsWith('!'))
                                                 {
-                                                    sentence = sentence.Substring(0, sentence.Length - 1); // Удаляем последний символ
-                                                    string[] words = sentence.Split(' ');
+                                                    string[] words = sentence.Substring(0, sentence.Length - 1).Split(' ');
 
-                                                    Array.Reverse(words); // Переворачиваем порядок слов
-                                                    string reversedSentence = string.Join(" ", words); // Объединяем слова обратно в строку
+                                                    Array.Reverse(words);
 
-                                                    reversedSentence = char.ToUpper(reversedSentence[0]) + reversedSentence.Substring(1); // Первое слово с большой буквы
-
-                                                    if (reversedSentence.Length > 0) // Меняем первую букву последнего слова на строчную
+                                                    string reversedSentence = string.Join(" ", words);
+                                                    if (reversedSentence.Length > 0)
                                                     {
-                                                        int lastSpaceIndex = reversedSentence.LastIndexOf(' ');
-                                                        if (lastSpaceIndex != -1 && lastSpaceIndex < reversedSentence.Length - 1)
-                                                        {
-                                                            string lastWord = reversedSentence.Substring(lastSpaceIndex + 1);
-                                                            string modifiedLastWord = char.ToLower(lastWord[0]) + lastWord.Substring(1);
-                                                            reversedSentence = reversedSentence.Substring(0, lastSpaceIndex + 1) + modifiedLastWord;
-                                                        }
+                                                        reversedSentence = char.ToUpper(reversedSentence[0]) + reversedSentence.Substring(1);
+                                                        int lastSpace = reversedSentence.LastIndexOf(' ');
+                                                        if (lastSpace > 0)
+                                                            reversedSentence = reversedSentence.Substring(0, lastSpace) + ' ' + char.ToLower(reversedSentence[lastSpace + 1]) + reversedSentence.Substring(lastSpace + 2);
                                                     }
 
-                                                    sentences[i] = reversedSentence + "!"; // Записываем измененное предложение обратно в массив
+                                                    sentences[i] = reversedSentence + "!";
                                                 }
                                             }
 
-                                            processedString = string.Join(" ", sentences).Trim(); // Собираем предложения в строку
-                                            Console.WriteLine("\nСтрока изменена");
+                                            string result = string.Join(" ", sentences);
+
+                                            Console.WriteLine("\nСтрока изменена:");
+                                            Console.WriteLine(result);
                                         }
                                         break;
-
                                     case 3:
                                         Console.WriteLine();
                                         break;
