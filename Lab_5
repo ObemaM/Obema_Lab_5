@@ -43,7 +43,7 @@ namespace Obema_Lab_1_T2
             return number;
         }
 
-        static double [,] CreateMatrix(int lines, int columns)
+        static double[,] CreateMatrix(int lines, int columns)
         {
             double[,] doubleMatrix = new double[lines, columns];
             for (int i = 0; i < lines; i++)
@@ -102,10 +102,7 @@ namespace Obema_Lab_1_T2
                         int q = CheckInt("Выберите число от 0 до 8: ", 0, 8);
 
                         for (int i = 0; i < lines; i++)
-                        {
-                            for (int j = 0; j < columns; j++)
-                                newMatrix[i, j] = BuildMatrix[i, j];
-                        }
+                            Array.Copy(BuildMatrix, i * columns, newMatrix, i * (columns + extraColumns), columns);
 
                         for (int i = 0; i < lines; i++)
                         {
@@ -113,6 +110,8 @@ namespace Obema_Lab_1_T2
                             {
                                 Random random = new Random();
                                 newMatrix[i, j] = Math.Round(-10000 + random.NextDouble() * 20000, q);
+                                if (newMatrix[i, j] == -0)
+                                    newMatrix[i, j] = 0;
                             }
                         }
                     }
@@ -120,10 +119,7 @@ namespace Obema_Lab_1_T2
                 case 2:
                     {
                         for (int i = 0; i < lines; i++)
-                        {
-                            for (int j = 0; j < columns; j++)
-                                newMatrix[i, j] = BuildMatrix[i, j];
-                        }
+                            Array.Copy(BuildMatrix, i * columns, newMatrix, i * (columns + extraColumns), columns);
 
                         for (int i = 0; i < lines; i++)
                         {
@@ -170,20 +166,24 @@ namespace Obema_Lab_1_T2
 
         static void PrintArray(double[][] array, int lines)
         {
-            Console.WriteLine("\nРваный массив: ");
-            for (int i = 0; i < lines; i++)
+            if (array.Length == 0)
+                Console.WriteLine("\nМассив пуст");
+            else
             {
-                Console.WriteLine();
-                for (int j = 0; j < array[i].Length; j++)
-                    Console.Write(array[i][j] + "     ");
-                Console.WriteLine();
+                Console.WriteLine("\nРваный массив: ");
+                for (int i = 0; i < lines; i++)
+                {
+                    Console.WriteLine();
+                    for (int j = 0; j < array[i].Length; j++)
+                        Console.Write(array[i][j] + "     ");
+                    Console.WriteLine();
+                }
             }
         }
 
         static double[][] RemoveFirstLine(double[][] array, double K)
         {
             int lineToRemove = -1;
-
             for (int i = 0; i < array.Length; i++)
             {
                 bool foundK = false;
@@ -203,52 +203,46 @@ namespace Obema_Lab_1_T2
             }
 
             if (lineToRemove == -1)
-                return array;
-
-            double[][] newArray = new double[array.Length - 1][];
-            int newArrayIndex = 0;
-            for (int i = 0; i < array.Length; i++)
             {
-                if (i != lineToRemove)
-                    newArray[newArrayIndex++] = array[i];
+                Console.WriteLine("\nЭлемент не найден, массив не изменен");
+                return array;
             }
+            else
+            {
+                Console.WriteLine("\nМассив изменен");
+                double[][] newArray = new double[array.Length - 1][];
+                int newArrayIndex = 0;
+                for (int i = 0; i < array.Length; i++)
+                {
+                    if (i != lineToRemove)
+                        newArray[newArrayIndex++] = array[i];
+                }
 
-            return newArray;
+                return newArray;
+            }
         }
 
         static string ProcessString(string input)
         {
-            // Убираем лишние пробелы
-            string trimmedInput = string.Join(" ", input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries));
+            input = Regex.Replace(input, @"([.?!,;:\s])\1+", "$1");
+            string[] sentenceArray = Regex.Split(input, @"(?<=[.!?])\s*");
+            string processedText = "";
 
-            // Проверяем и добавляем пробелы после :, ;,
-            trimmedInput = trimmedInput.Replace(": ", ":");
-            trimmedInput = trimmedInput.Replace(", ", ",");
-            trimmedInput = trimmedInput.Replace("; ", ";");
-            trimmedInput = trimmedInput.Replace(":", ": ");
-            trimmedInput = trimmedInput.Replace(",", ", ");
-            trimmedInput = trimmedInput.Replace(";", "; ");
-
-            // Разделяем текст на предложения по . ! ?
-            string[] sentences = trimmedInput.Split(new[] { '.', '!', '?' }, StringSplitOptions.RemoveEmptyEntries);
-            StringBuilder result = new StringBuilder();
-
-            foreach (string sentence in sentences)
+            foreach (string sentence in sentenceArray)
             {
-                // Убираем лишние пробелы в предложении
-                string trimmedSentence = sentence.Trim();
-
-                // Сохраняем корректное предложение
-                result.Append(trimmedSentence);
-
-                // Добавляем символ конца предложения
-                if (input.Contains(trimmedSentence + '.')) result.Append(". ");
-                else if (input.Contains(trimmedSentence + '!')) result.Append("! ");
-                else if (input.Contains(trimmedSentence + '?')) result.Append("? ");
+                if (sentence.Length > 0)
+                {
+                    string firstLetter = sentence.Substring(0, 1).ToUpper();
+                    string restOfSentence = sentence.Substring(1).ToLower();
+                    processedText += firstLetter + restOfSentence + " ";
+                }
             }
 
-            // Возвращаем результат с удалением лишнего пробела в конце
-            return result.ToString().Trim();
+            return processedText.Trim();
+        }
+        static bool CheckInput(string input)
+        {
+            return Regex.IsMatch(input, @"^[а-яА-Я0-9,;:\!?.\s]+$") && "?!.".Contains(input[input.Length - 1]);
         }
 
         static void Main(string[] args)
@@ -266,6 +260,7 @@ namespace Obema_Lab_1_T2
                 switch (choice)
                 {
                     case 1:
+                        int q = 0;
                         int lines = CheckInt("\nЗадайте количество строк у матрицы: ", 1, 10);
                         int columns = CheckInt("Задайте количество столбцов у матрицы: ", 1, 10);
 
@@ -281,7 +276,7 @@ namespace Obema_Lab_1_T2
                             case 1:
                                 {
                                     Console.WriteLine("\nВыберите до какого числа после запятой округлять числа: ");
-                                    int q = CheckInt("Выберите число от 0 до 8: ", 0, 8);
+                                    q = CheckInt("Выберите число от 0 до 8: ", 0, 8);
                                     BuildMatrix = RandomMatrix(lines, columns, q);
                                     Console.WriteLine("\nМатрица создана");
                                 }
@@ -336,6 +331,7 @@ namespace Obema_Lab_1_T2
                         } while (choice != 3 && choice != 4);
                         break;
                     case 2:
+                        q = 0;
                         Console.WriteLine("\nВыберите метод заполнения массива: ");
                         Console.WriteLine("1. Случайные числа");
                         Console.WriteLine("2. Ввод с клавиатуры");
@@ -347,7 +343,7 @@ namespace Obema_Lab_1_T2
                         {
                             case 1:
                                 Console.WriteLine("\nВыберите до какого числа после запятой округлять числа: ");
-                                int q = CheckInt("\nВыберите число от 0 до 8: ", 0, 8);
+                                q = CheckInt("\nВыберите число от 0 до 8: ", 0, 8);
                                 BuildArray = RandomArray(lines, q);
                                 break;
                             case 2:
@@ -374,9 +370,15 @@ namespace Obema_Lab_1_T2
                                         PrintArray(BuildArray, lines);
                                         break;
                                     case 2:
-                                        double K = CheckDouble("\nВведите число для поиска в массиве: ");
-                                        BuildArray = RemoveFirstLine(BuildArray, K);
-                                        lines = BuildArray.Length;
+                                        if (BuildArray.Length == 0)
+                                            Console.WriteLine("\nМассив пуст");
+                                        else
+                                        {
+                                            double kforround = CheckDouble($"\nВведите число для поиска в массиве. Оно будет округлено до {q} знаков после запятой: ");
+                                            double K = Math.Round(kforround, q);
+                                            BuildArray = RemoveFirstLine(BuildArray, K);
+                                            lines = BuildArray.Length;
+                                        }
                                         break;
                                     case 3:
                                         Console.WriteLine();
@@ -400,31 +402,35 @@ namespace Obema_Lab_1_T2
                             {
 
                                 case 1:
-                                    input = "В лесу родилась елочка! В лесу она росла. Зимой и летом, стройная, зеленая, была!";
+                                    input = "В лесу родилась елочка! В лесу она росла. Зимой и летом стройная, зеленая была! ";
                                     break;
                                 case 2:
                                     {
-                                        bool NotEmpty = false;
+                                        bool stringCheck = false;
                                         do
                                         {
-                                            Console.WriteLine("\nВведите строку символов:");
+                                            Console.WriteLine("\nВведите текст: ");
                                             input = Console.ReadLine();
+                                            input = input.Trim();
 
                                             if (string.IsNullOrWhiteSpace(input))
                                             {
                                                 Console.WriteLine("Строка не должна быть пустой или состоять только из пробелов. Попробуйте снова");
-                                                NotEmpty = false;
+                                                stringCheck = false;
+                                            }
+                                            else if (CheckInput(input) == false)
+                                            {
+                                                Console.WriteLine("Некорректный ввод. Строка должна состоять только из русских букв, символов {: ; , . ! ?}, пробела и цифр. В конце ввода обязательно должен стоять один из трех знаков - {! ? .}");
+                                                stringCheck = false;
                                             }
                                             else
-                                                NotEmpty = true;
-
-                                        } while (!NotEmpty);
+                                                stringCheck = true;
+                                        } while (!stringCheck);
                                     }
                                     break;
                             }
-                            string trimmedInput = string.Join(" ", input.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries)); // Удаление лишних пробелов
 
-                            string processedString = ProcessString(trimmedInput); // Удаление знаков препинания, кроме . ! ? в конце предложений
+                            string processedString = ProcessString(input); 
                             do
                             {
                                 Console.WriteLine("\nВыберите действие: ");
@@ -445,40 +451,61 @@ namespace Obema_Lab_1_T2
                                     case 2:
                                         {
                                             string[] sentences = Regex.Split(processedString, @"(?<=[.!?])\s*");
+                                            string[] endWords = null;
+                                            string result = null;
 
                                             for (int i = 0; i < sentences.Length; i++)
                                             {
+                                                string partOfResult = " ";
                                                 string sentence = sentences[i];
+
                                                 if (sentence.EndsWith('!'))
                                                 {
                                                     string[] words = sentence.Substring(0, sentence.Length - 1).Split(' ');
+                                                    string[] punctuations = new string[words.Length + 1];
+                                                    string[] newWords = new string[words.Length];
+                                                    endWords = new string[words.Length];
+
+                                                    punctuations[0] = " ";
 
                                                     for (int j = 0; j < words.Length; j++)
                                                     {
                                                         if (words[j].EndsWith(",") || words[j].EndsWith(";") || words[j].EndsWith(":"))
                                                         {
-                                                            words[j + 1] = words[j + 1] + words[j][words[j].Length - 1] + " ";
-                                                            words[j] = words[j].Remove(words[j].Length - 1);
+                                                            punctuations[j + 1] = words[j][words[j].Length - 1].ToString() + " "; // Сохраняем последний символ, как строку
+                                                            newWords[j] = words[j].Substring(0, words[j].Length - 1);
+                                                        }
+                                                        else
+                                                        {
+                                                            punctuations[j + 1] = " ";
+                                                            newWords[j] = words[j];
                                                         }
                                                     }
 
-                                                    Array.Reverse(words);
+                                                    newWords = newWords.Reverse().ToArray();
+                                                    punctuations = punctuations.Reverse().ToArray();
 
-                                                    string reversedSentence = string.Join(" ", words);
-                                                    if (reversedSentence.Length > 0)
+                                                    for (int p = 0; p < words.Length; p++)
                                                     {
-                                                        reversedSentence = char.ToUpper(reversedSentence[0]) + reversedSentence.Substring(1);
-                                                        int lastSpace = reversedSentence.LastIndexOf(' ');
-                                                        if (lastSpace > 0)
-                                                            reversedSentence = reversedSentence.Substring(0, lastSpace) + ' ' + char.ToLower(reversedSentence[lastSpace + 1]) + reversedSentence.Substring(lastSpace + 2);
+                                                        endWords[p] = newWords[p] + punctuations[p + 1];
+                                                        if (p == 0)
+                                                            endWords[p] = endWords[p].Substring(0, 1).ToUpper() + endWords[p].Substring(1);
+                                                        if (p == words.Length - 1)
+                                                            endWords[p] = endWords[p].Substring(0, 1).ToLower() + endWords[p].Substring(1);
                                                     }
 
-                                                    sentences[i] = reversedSentence + "!";
+                                                    partOfResult = string.Join("", endWords);
+                                                    partOfResult = partOfResult.Substring(0, partOfResult.Length - 1);
+                                                    partOfResult = partOfResult + "! ";
                                                 }
+                                                else
+                                                    partOfResult = sentences[i] + ' ';
+
+                                                result = result + partOfResult;
+                                                result.Trim();
                                             }
 
-                                            string result = string.Join(" ", sentences).Trim();
-                                            result = result.Replace("  ", " ");
+                                            result = result.Trim();
 
                                             Console.WriteLine("\nСтрока изменена:");
                                             Console.WriteLine(result);
@@ -499,6 +526,5 @@ namespace Obema_Lab_1_T2
         }
     }
 }
-
 
 
