@@ -224,7 +224,9 @@ namespace Obema_Lab_1_T2
 
         static string ProcessString(string input)
         {
+            input = Regex.Replace(input, @"\s+([?!.,;:])", "$1");
             input = Regex.Replace(input, @"([.?!,;:\s])\1+", "$1");
+            input = Regex.Replace(input, @"([?!.,;:])(?!\s)", "$1 ");
             string[] sentenceArray = Regex.Split(input, @"(?<=[.!?])\s*");
             string processedText = "";
 
@@ -418,9 +420,9 @@ namespace Obema_Lab_1_T2
                                                 Console.WriteLine("Строка не должна быть пустой или состоять только из пробелов. Попробуйте снова");
                                                 stringCheck = false;
                                             }
-                                            else if (CheckInput(input) == false)
+                                            else if (CheckInput(input) == false || "?!.".Contains(input[0]) || input.Length > 10000)
                                             {
-                                                Console.WriteLine("Некорректный ввод. Строка должна состоять только из русских букв, символов {: ; , . ! ?}, пробела и цифр. В конце ввода обязательно должен стоять один из трех знаков - {! ? .}");
+                                                Console.WriteLine("Некорректный ввод. Строка должна состоять только из русских букв, символов {: ; , . ! ?}, пробела и цифр. В конце ввода обязательно должен стоять один из трех знаков - {! ? .} Максимальная длина строки - 10000 символов.");
                                                 stringCheck = false;
                                             }
                                             else
@@ -429,8 +431,10 @@ namespace Obema_Lab_1_T2
                                     }
                                     break;
                             }
+                            
+                            string processedString = ProcessString(input);
 
-                            string processedString = ProcessString(input); 
+                            Console.WriteLine("\nТекущая строка создана");
                             do
                             {
                                 Console.WriteLine("\nВыберите действие: ");
@@ -472,7 +476,7 @@ namespace Obema_Lab_1_T2
                                                     {
                                                         if (words[j].EndsWith(",") || words[j].EndsWith(";") || words[j].EndsWith(":"))
                                                         {
-                                                            punctuations[j + 1] = words[j][words[j].Length - 1].ToString() + " "; // Сохраняем последний символ, как строку
+                                                            punctuations[j + 1] = words[j][words[j].Length - 1].ToString() + " "; 
                                                             newWords[j] = words[j].Substring(0, words[j].Length - 1);
                                                         }
                                                         else
@@ -526,5 +530,3 @@ namespace Obema_Lab_1_T2
         }
     }
 }
-
-
