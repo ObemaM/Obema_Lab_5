@@ -260,6 +260,69 @@ namespace Obema_Lab_1_T2
                 return true;
         }
 
+        static string ReverseString(string processedString)
+        {
+            string[] sentences = Regex.Split(processedString, @"(?<=[.!?])\s*");
+            string[] endWords = null;
+            string result = null;
+
+            for (int i = 0; i < sentences.Length; i++)
+            {
+                string partOfResult = " ";
+                string sentence = sentences[i];
+
+                if (sentence.EndsWith('!'))
+                {
+                    string[] words = sentence.Substring(0, sentence.Length - 1).Split(' ');
+                    string[] punctuations = new string[words.Length + 1];
+                    string[] newWords = new string[words.Length];
+                    endWords = new string[words.Length];
+
+                    punctuations[0] = " ";
+
+                    for (int j = 0; j < words.Length; j++)
+                    {
+                        if (words[j].EndsWith(",") || words[j].EndsWith(";") || words[j].EndsWith(":"))
+                        {
+                            punctuations[j + 1] = words[j][words[j].Length - 1].ToString() + " ";
+                            newWords[j] = words[j].Substring(0, words[j].Length - 1);
+                        }
+                        else
+                        {
+                            punctuations[j + 1] = " ";
+                            newWords[j] = words[j];
+                        }
+                    }
+
+                    newWords = newWords.Reverse().ToArray();
+                    punctuations = punctuations.Reverse().ToArray();
+
+                    for (int p = 0; p < words.Length; p++)
+                    {
+                        endWords[p] = newWords[p] + punctuations[p + 1];
+                        if (p == words.Length - 1)
+                            endWords[p] = endWords[p].Substring(0, 1).ToLower() + endWords[p].Substring(1);
+                        if (p == 0)
+                            endWords[p] = endWords[p].Substring(0, 1).ToUpper() + endWords[p].Substring(1);
+                    }
+
+                    partOfResult = string.Join("", endWords);
+                    partOfResult = partOfResult.Substring(0, partOfResult.Length - 1);
+                    partOfResult = partOfResult + "! ";
+                }
+                else
+                    partOfResult = sentences[i] + ' ';
+
+                result = result + partOfResult;
+                result.Trim();
+            }
+
+            result = result.Trim();
+
+            Console.WriteLine("\nСтрока изменена:");
+            return result;
+        }
+
         static void Main(string[] args)
         {
             int choice;
@@ -466,67 +529,7 @@ namespace Obema_Lab_1_T2
                                         }
                                         break;
                                     case 2:
-                                        {
-                                            string[] sentences = Regex.Split(processedString, @"(?<=[.!?])\s*");
-                                            string[] endWords = null;
-                                            string result = null;
-
-                                            for (int i = 0; i < sentences.Length; i++)
-                                            {
-                                                string partOfResult = " ";
-                                                string sentence = sentences[i];
-
-                                                if (sentence.EndsWith('!'))
-                                                {
-                                                    string[] words = sentence.Substring(0, sentence.Length - 1).Split(' ');
-                                                    string[] punctuations = new string[words.Length + 1];
-                                                    string[] newWords = new string[words.Length];
-                                                    endWords = new string[words.Length];
-
-                                                    punctuations[0] = " ";
-
-                                                    for (int j = 0; j < words.Length; j++)
-                                                    {
-                                                        if (words[j].EndsWith(",") || words[j].EndsWith(";") || words[j].EndsWith(":"))
-                                                        {
-                                                            punctuations[j + 1] = words[j][words[j].Length - 1].ToString() + " ";
-                                                            newWords[j] = words[j].Substring(0, words[j].Length - 1);
-                                                        }
-                                                        else
-                                                        {
-                                                            punctuations[j + 1] = " ";
-                                                            newWords[j] = words[j];
-                                                        }
-                                                    }
-
-                                                    newWords = newWords.Reverse().ToArray();
-                                                    punctuations = punctuations.Reverse().ToArray();
-
-                                                    for (int p = 0; p < words.Length; p++)
-                                                    {
-                                                        endWords[p] = newWords[p] + punctuations[p + 1];
-                                                        if (p == words.Length - 1)
-                                                            endWords[p] = endWords[p].Substring(0, 1).ToLower() + endWords[p].Substring(1);
-                                                        if (p == 0)
-                                                            endWords[p] = endWords[p].Substring(0, 1).ToUpper() + endWords[p].Substring(1);
-                                                    }
-
-                                                    partOfResult = string.Join("", endWords);
-                                                    partOfResult = partOfResult.Substring(0, partOfResult.Length - 1);
-                                                    partOfResult = partOfResult + "! ";
-                                                }
-                                                else
-                                                    partOfResult = sentences[i] + ' ';
-
-                                                result = result + partOfResult;
-                                                result.Trim();
-                                            }
-
-                                            result = result.Trim();
-
-                                            Console.WriteLine("\nСтрока изменена:");
-                                            Console.WriteLine(result);
-                                        }
+                                            Console.WriteLine(ReverseString(processedString));
                                         break;
                                     case 3:
                                         Console.WriteLine();
