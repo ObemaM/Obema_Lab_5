@@ -36,7 +36,7 @@ namespace Obema_Lab_1_T2
                 if (!IsNumber || Math.Abs(number) > 10000)
                 {
                     IsNumber = false;
-                    Console.WriteLine($"Некорректный ввод целого числа. Число должно быть от -10000 до 10000");
+                    Console.WriteLine($"Некорректный ввод числа. Число должно быть от -10000 до 10000");
                 }
             } while (!IsNumber);
 
@@ -204,7 +204,7 @@ namespace Obema_Lab_1_T2
 
             if (lineToRemove == -1)
             {
-                Console.WriteLine("\nЭлемент не найден, массив не изменен");
+                Console.WriteLine($"\nЭлемент {K} не найден, массив не изменен");
                 return array;
             }
             else
@@ -215,14 +215,19 @@ namespace Obema_Lab_1_T2
                 for (int i = 0; i < array.Length; i++)
                 {
                     if (i != lineToRemove)
-                        newArray[newArrayIndex++] = array[i];
+                    {
+                        newArray[newArrayIndex] = new double[array[i].Length];
+                        Array.Copy(array[i], newArray[newArrayIndex], array[i].Length);
+
+                        newArrayIndex++;
+                    }
                 }
 
                 return newArray;
             }
         }
 
-        static string ProcessString(string input)
+        static string ProcessedString(string input)
         {
             input = Regex.Replace(input, @"\s+([?!.,;:])", "$1");
             input = Regex.Replace(input, @"([.?!,;:\s])\1+", "$1");
@@ -245,6 +250,14 @@ namespace Obema_Lab_1_T2
         static bool CheckInput(string input)
         {
             return Regex.IsMatch(input, @"^[а-яА-Я0-9,;:\!?.\s]+$") && "?!.".Contains(input[input.Length - 1]);
+        }
+
+        static bool CheckDuplicate(string input)
+        {
+            if (Regex.IsMatch(input, @"\?+[.,!;:]") || Regex.IsMatch(input, @"\!+[.,?;:]") || Regex.IsMatch(input, @"\.+[,?!;:]") || Regex.IsMatch(input, @"\;+[.,?!:]") || Regex.IsMatch(input, @"\:+[.,?!;:]") || Regex.IsMatch(input, @"\,+[.,?!;:]"))
+                return false;
+            else
+                return true;
         }
 
         static void Main(string[] args)
@@ -420,9 +433,9 @@ namespace Obema_Lab_1_T2
                                                 Console.WriteLine("Строка не должна быть пустой или состоять только из пробелов. Попробуйте снова");
                                                 stringCheck = false;
                                             }
-                                            else if (CheckInput(input) == false || "?!.".Contains(input[0]) || input.Length > 10000)
+                                            else if (CheckInput(input) == false || "?!.;:,".Contains(input[0]) || input.Length > 10000 || CheckDuplicate(input)==false)
                                             {
-                                                Console.WriteLine("Некорректный ввод. Строка должна состоять только из русских букв, символов {: ; , . ! ?}, пробела и цифр. В конце ввода обязательно должен стоять один из трех знаков - {! ? .} Максимальная длина строки - 10000 символов.");
+                                                Console.WriteLine("Некорректный ввод строки. Строка должна состоять только из русских букв, символов {: ; , . ! ?}, пробела и цифр. В конце ввода обязательно должен стоять один из трех знаков - {! ? .} Максимальная длина строки - 10000 символов");
                                                 stringCheck = false;
                                             }
                                             else
@@ -431,8 +444,8 @@ namespace Obema_Lab_1_T2
                                     }
                                     break;
                             }
-                            
-                            string processedString = ProcessString(input);
+
+                            string processedString = ProcessedString(input);
 
                             Console.WriteLine("\nТекущая строка создана");
                             do
@@ -476,7 +489,7 @@ namespace Obema_Lab_1_T2
                                                     {
                                                         if (words[j].EndsWith(",") || words[j].EndsWith(";") || words[j].EndsWith(":"))
                                                         {
-                                                            punctuations[j + 1] = words[j][words[j].Length - 1].ToString() + " "; 
+                                                            punctuations[j + 1] = words[j][words[j].Length - 1].ToString() + " ";
                                                             newWords[j] = words[j].Substring(0, words[j].Length - 1);
                                                         }
                                                         else
@@ -492,10 +505,10 @@ namespace Obema_Lab_1_T2
                                                     for (int p = 0; p < words.Length; p++)
                                                     {
                                                         endWords[p] = newWords[p] + punctuations[p + 1];
-                                                        if (p == 0)
-                                                            endWords[p] = endWords[p].Substring(0, 1).ToUpper() + endWords[p].Substring(1);
                                                         if (p == words.Length - 1)
                                                             endWords[p] = endWords[p].Substring(0, 1).ToLower() + endWords[p].Substring(1);
+                                                        if (p == 0)
+                                                            endWords[p] = endWords[p].Substring(0, 1).ToUpper() + endWords[p].Substring(1);
                                                     }
 
                                                     partOfResult = string.Join("", endWords);
